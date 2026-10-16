@@ -89,3 +89,6 @@ html{scrollbar-gutter:stable}
 .explore-layout{grid-template-columns:minmax(0,1fr) 280px;gap:32px}
 @media(max-width:1100px){.home,.video-page,.lyrics-page{padding-inline:48px}.explore-layout{grid-template-columns:minmax(0,1fr) 200px;gap:24px}}
 @media(max-width:800px){.home,.video-page,.lyrics-page{padding-inline:20px}.explore-layout{display:block}}
+
+/* 인물 이름은 웹 글꼴의 한글 조각별 로딩과 관계없이 같은 글꼴을 사용합니다. */
+.person-content h2{font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-weight:800}
