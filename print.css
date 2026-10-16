@@ -3,7 +3,7 @@
 @media print{
  html,body{margin:0!important;padding:0!important;background:white!important;color:#172f40!important;overflow:visible!important;scrollbar-gutter:auto!important}
  body>*:not(#print-lyrics){display:none!important}
- #print-lyrics{display:block!important;font-family:'Noto Sans KR','Malgun Gothic',sans-serif;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ #print-lyrics{display:block!important;font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;print-color-adjust:exact;-webkit-print-color-adjust:exact}
  .print-sheet{width:100%;height:270mm;box-sizing:border-box;display:flex;flex-direction:column;break-after:page;page-break-after:always}
  .print-sheet:last-child{break-after:auto;page-break-after:auto}
  .print-heading{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1pt solid #adc1ce;padding:0 0 4mm;margin-bottom:4mm;flex:0 0 auto}
