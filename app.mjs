@@ -5,7 +5,7 @@ import {lessonFocus} from './lesson-focus.mjs';
 import {references} from './references.mjs';
 import {contexts} from './context.mjs';
 import {learning} from './learning.mjs';
-import {people,verses,verseTitles,lyricNames,kingNames} from './data.mjs';
+import {people,verses,verseTitles,lyricNames,kingNames} from './data.mjs?v=20';
 let assets={};try{const response=await fetch(new URL('assets.json',import.meta.url));if(response.ok)assets=await response.json()}catch{ /* text remains usable when images are unavailable */ }
 const $=s=>document.querySelector(s);const panel=$('#person-panel');const seen=new Set();let lastTrigger=null;let fontSize=27;
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
