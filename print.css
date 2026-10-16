@@ -17,3 +17,5 @@
  .print-person{display:inline;font-size:inherit;font-weight:800;color:#145678;background:#e5f0f8;border-radius:2pt;padding:0 2pt;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 }
 
+
+@media print{.print-verse>.print-line:last-child{font-weight:800}}
