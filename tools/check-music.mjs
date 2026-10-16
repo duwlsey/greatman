@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const elements=new Map();
+for(const id of ['lyrics-play','music-restart','lyrics-music','music-status','music-close'])elements.set(id,{hidden:id==='music-restart',listeners:{},addEventListener(n,f){this.listeners[n]=f},setAttribute(){}});
+let tick,time=0,playback=-1;
+const fake={getCurrentTime:()=>time,getPlayerState:()=>playback,playVideo(){playback=1},pauseVideo(){playback=2},seekTo(t){time=t}};
+const YT={Player:function(id,options){queueMicrotask(()=>options.events.onReady({target:fake}));return fake}};
+const ctx=vm.createContext({document:{getElementById:id=>elements.get(id)},window:{YT},YT,location:{origin:'http://localhost'},setInterval:f=>{tick=f;return 1}});
+vm.runInContext(fs.readFileSync('music.mjs','utf8').replace('export function','function'),ctx);
+const restart=elements.get('music-restart');
+assert.equal(restart.hidden,true);
+await elements.get('lyrics-play').listeners.click();await Promise.resolve();
+time=15;tick();assert.equal(restart.hidden,false);
+playback=2;tick();assert.equal(restart.hidden,false);
+restart.listeners.click();tick();assert.equal(time,0);assert.equal(restart.hidden,true);assert.equal(playback,2);
+console.log('Restart visibility: initial, playing, paused, reset passed.');

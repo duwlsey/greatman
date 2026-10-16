@@ -1,0 +1,19 @@
+#print-lyrics{display:none}
+@page{size:A4 portrait;margin:12mm}
+@media print{
+ html,body{margin:0!important;padding:0!important;background:white!important;color:#172f40!important;overflow:visible!important;scrollbar-gutter:auto!important}
+ body>*:not(#print-lyrics){display:none!important}
+ #print-lyrics{display:block!important;font-family:'Noto Sans KR','Malgun Gothic',sans-serif;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ .print-sheet{width:100%;height:270mm;box-sizing:border-box;display:flex;flex-direction:column;break-after:page;page-break-after:always}
+ .print-sheet:last-child{break-after:auto;page-break-after:auto}
+ .print-heading{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1pt solid #adc1ce;padding:0 0 4mm;margin-bottom:4mm;flex:0 0 auto}
+ .print-heading h1{font-size:21pt;line-height:1.3;letter-spacing:-.04em;font-weight:800;margin:0}
+ .print-heading>span{font-size:10pt;color:#526a79;white-space:nowrap;margin-left:5mm}
+ .print-verses{display:flex;flex-direction:column;justify-content:space-between;flex:1;min-height:0}
+ .print-verse{break-inside:avoid;page-break-inside:avoid;flex:0 0 auto;padding:0;margin:0}
+ .print-verse h2{margin:0 0 2mm;font-size:12pt;line-height:1.2;color:#345d76;font-weight:800}
+ .print-line{margin:0;padding:0;font-size:15pt;line-height:1.45;letter-spacing:-.04em;word-break:keep-all;white-space:nowrap}
+ .print-sheet[data-print-page="1"] .print-line{line-height:1.82}
+ .print-person{display:inline;font-size:inherit;font-weight:800;color:#145678;background:#e5f0f8;border-radius:2pt;padding:0 2pt;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+}
+
