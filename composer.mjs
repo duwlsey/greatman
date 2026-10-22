@@ -10,7 +10,7 @@ const safeSet=(key,value)=>{try{localStorage.setItem(key,value)}catch{}};
 const draftKey=()=>`greatman-draft-v1:${endpoint||'preview'}`;
 function tell(text,type=''){const el=$('#compose-status');el.textContent=text;el.className='compose-state '+type}
 function cacheDraft(){safeSet(draftKey(),JSON.stringify({work,revision,dirty}))}
-function updateCount(){const selected=filledVerses(work).map(v=>v.number);$('#compose-counter').textContent=selected.length?`${selected.join(' · ')}절을 저장·출력해요.`:'작성한 절만 저장·출력해요.';$('#compose-save').disabled=busy||!selected.length;$('#compose-print').disabled=!selected.length;$('#compose-reset').disabled=busy;$('#work-title').disabled=busy;document.querySelectorAll('.compose-cell').forEach(input=>input.disabled=busy)}
+function updateCount(){const selected=filledVerses(work).map(v=>v.number);$('#compose-counter').textContent=selected.length?`${selected.join(' · ')}절을 저장·출력해요.`:'작성한 절만 저장·출력해요.';$('#compose-save').disabled=busy||(!selected.length&&!dirty);$('#compose-print').disabled=!selected.length;$('#compose-reset').disabled=busy;$('#work-title').disabled=busy;document.querySelectorAll('.compose-cell').forEach(input=>input.disabled=busy)}
 function markDirty(){dirty=true;cacheDraft();updateCount();tell(connected?'아직 저장하지 않았어요. 저장을 누르면 친구들 화면에 반영돼요.':'이 기기에만 임시 보관 중이에요. 선생님 설정에서 저장소를 연결해 주세요.')}
 function renderWork(){
  syllableInput?.finish();
@@ -36,13 +36,12 @@ async function publish(action,{keepRecord=true}={}){
  if(busy)return;if(!endpoint){$('#compose-settings').open=true;tell('공동 저장을 하려면 먼저 선생님 설정에서 구글 저장소를 연결해 주세요.','error');return}
  if(!connected){try{await loadCurrent()}catch(e){tell(e.message,'error');return}}
  const secret=await key();if(!secret)return;
- busy=true;updateCount();tell(action==='reset'?'현재 노랫말을 기록에 남기고 있어요.':'친구들과 볼 노랫말을 저장하고 있어요.');
+ busy=true;updateCount();tell(action==='reset'?'빈 노랫말 화면을 저장하고 있어요.':'친구들과 볼 노랫말을 저장하고 있어요.');
  try{const result=await writeShared(endpoint,{action,editKey:secret,baseRevision:revision,keepRecord,work:serializeWork(work)});revision=result.current.revision;work=deserializeWork(result.current.work);dirty=false;records=result.records||records;recordCount=result.recordCount||records.length;renderWork();renderHistory();cacheDraft();tell(action==='reset'?(keepRecord?'이전 노랫말은 제작 기록에 남기고, 빈칸으로 새로 시작했어요.':'새 기록을 남기지 않고 빈칸으로 초기화했어요. 기존 제작 기록은 그대로 있어요.'):'저장했어요. 같은 수업 주소를 연 친구들 화면에도 곧 반영돼요.','success')}
  catch(e){tell(e.message,'error')}finally{busy=false;updateCount()}
 }
-$('#compose-save').onclick=()=>publish('save');
-$('#compose-reset').onclick=()=>{if(!filledVerses(work).length){tell('이미 빈칸이에요.');return}$('#compose-confirm').showModal()};
-$('#compose-cancel').onclick=()=>$('#compose-confirm').close();$('#compose-confirm-reset').onclick=()=>{$('#compose-confirm').close();publish('reset',{keepRecord:true})};$('#compose-reset-discard').onclick=()=>{$('#compose-confirm').close();publish('reset',{keepRecord:false})};
+$('#compose-save').onclick=()=>publish(filledVerses(work).length?'save':'reset',{keepRecord:false});
+$('#compose-reset').onclick=()=>{if(busy)return;syllableInput.finish();work.verses=blankWork().verses;renderWork();markDirty();tell(connected?'노랫말을 모두 지웠어요. 저장을 누르면 친구들 화면도 빈칸으로 바뀌어요. 기존 제작 기록은 유지돼요.':'화면의 노랫말을 모두 지웠어요. 기존 제작 기록은 유지돼요.')};
 $('#compose-history').addEventListener('click',async e=>{const more=e.target.closest('[data-load-more]');if(more){more.disabled=true;try{const data=await readShared(endpoint,'history',{offset:String(records.length)});records.push(...data.records);recordCount=data.recordCount;renderHistory()}catch(error){tell(error.message,'error');more.disabled=false}return}const button=e.target.closest('[data-record]');if(!button||busy)return;button.disabled=true;try{const result=await readShared(endpoint,'record',{id:button.dataset.record}),past=deserializeWork(result.record.work);if(button.dataset.action==='print')print(past);else{if(dirty&&!confirm('아직 저장하지 않은 글자를 이전 노랫말로 바꿀까요?'))return;work=past;dirty=true;renderWork();cacheDraft();tell('이전 노랫말을 불러왔어요. 저장을 누르면 친구들 화면에도 반영돼요.')}}catch(error){tell(error.message,'error')}finally{button.disabled=false}});
 $('#compose-connect').onclick=async()=>{const value=$('#compose-endpoint').value.trim();if(!validEndpoint(value)){tell('Apps Script의 /exec로 끝나는 웹 앱 주소를 넣어 주세요.','error');return}if(dirty&&endpoint!==value&&!confirm('저장소를 바꾸면 이 화면의 초안 대신 연결한 저장소의 노랫말을 불러옵니다. 바꿀까요?'))return;endpoint=value;editKey=$('#compose-key').value;connected=false;safeSet('greatman-endpoint',endpoint);try{await loadCurrent({force:true});startPolling()}catch(e){tell(e.message,'error')}};
 $('#compose-key').addEventListener('input',()=>editKey=$('#compose-key').value);
