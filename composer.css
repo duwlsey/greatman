@@ -1,0 +1,65 @@
+/* Our class lyric notebook: square syllables follow the original song's line breaks. */
+.compose-page{max-width:1312px;padding:48px 48px 20px;margin:auto}
+.compose-heading h1{font-size:34px;letter-spacing:-.05em;margin:12px 0}
+.compose-heading>p{color:var(--muted);line-height:1.8;font-size:16px}
+.compose-topline{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.compose-title{display:flex;align-items:center;gap:16px;margin:28px 0 18px;font-size:13px;color:var(--muted)}
+.compose-title input{width:min(530px,100%);min-width:0;font:700 22px "Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);background:white;border:1px solid var(--line);border-radius:10px;padding:12px 15px}
+.compose-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 0;border-block:1px solid var(--line);background:#f7fafc;position:sticky;top:0;z-index:4}
+.compose-actions button,.compose-tools button,.history-actions button,.compose-settings button,.compose-dialog button{font:700 13px "Malgun Gothic","Apple SD Gothic Neo",sans-serif;border:1px solid var(--line);background:white;color:var(--ink);padding:10px 14px;border-radius:9px;min-height:40px}
+.compose-actions .compose-primary{background:var(--ink);border-color:var(--ink);color:white}
+.compose-actions .compose-reset{margin-left:auto;color:#8d4242}
+.compose-actions .compose-rewind{padding:0;width:38px;font-size:17px}
+.compose-state{font-size:13px;line-height:1.7;color:var(--muted);margin:12px 0;min-height:24px}
+.compose-state.error{color:#a03434}
+.compose-state.success{color:#28725f}
+.compose-tools{display:flex;align-items:center;gap:12px;justify-content:space-between;color:var(--muted);font-size:12px;margin:16px 0 26px}
+.compose-tools label{display:flex;align-items:center;gap:7px}
+.compose-verse{border:1px solid var(--line);background:white;border-radius:16px;margin:20px 0;overflow:hidden}
+.compose-verse>summary{padding:18px 23px;cursor:pointer;color:var(--ink);font-size:19px;font-weight:800;background:#edf5fa;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.compose-verse>summary::after{content:'펼치기 +';font-size:12px;font-weight:600;color:var(--blue)}
+.compose-verse[open]>summary::after{content:'접기 −'}
+.compose-verse>summary small{font-size:12px;font-weight:500;color:var(--muted);margin-left:auto;margin-right:15px}
+.compose-lines{--cell-size:clamp(24px,2.55vw,34px);padding:28px 25px 30px;overflow-x:auto}
+.compose-row{display:flex;align-items:center;gap:3px;white-space:nowrap;width:max-content;margin-bottom:16px}
+.compose-row:last-of-type{margin-bottom:0}
+.compose-cell{font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:calc(var(--cell-size)*.68);font-weight:700;text-align:center;color:var(--ink);border:1.5px solid #b8ccdb;border-radius:5px;background:#fff;width:var(--cell-size);height:calc(var(--cell-size)*1.24);padding:0;flex:none;caret-color:var(--blue)}
+.compose-cell:focus{outline:3px solid #efc65a;outline-offset:1px;background:#fffbed;position:relative;z-index:1}
+.compose-cell[data-filled=true]{background:#edf6fc;border-color:#75a7c5}
+.compose-gap{width:calc(var(--cell-size)*.36);flex:none}
+.compose-reference{color:var(--muted);font-size:12px;margin:5px 0 10px;letter-spacing:.02em}
+.compose-footnote{font-size:12px;color:var(--muted);line-height:1.8}
+.compose-history{margin-top:48px;border-top:1px solid var(--line);padding-top:28px}
+.compose-history h2{font-size:24px;margin-bottom:8px}
+.compose-history>p{font-size:14px;color:var(--muted);line-height:1.8}
+.history-list{margin-top:20px;display:grid;gap:12px}
+.history-card{padding:18px 20px;background:white;border:1px solid var(--line);border-radius:12px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.history-card h3{font-size:17px;margin:0 0 7px}.history-card p{font-size:12px;color:var(--muted)}
+.history-actions{display:flex;gap:6px;flex-shrink:0}.history-actions button{font-size:12px;padding:9px 11px}
+.compose-empty{padding:26px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);text-align:center;font-size:14px}
+.compose-settings{margin-top:24px;border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:13px}
+.compose-settings>summary{cursor:pointer;font-weight:700;min-height:40px}
+.compose-settings label{display:block;margin:15px 0 8px;color:var(--ink);font-weight:700}
+.compose-settings input{display:block;width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;font:14px "Malgun Gothic","Apple SD Gothic Neo",sans-serif;margin-bottom:9px;color:var(--ink)}
+.compose-settings p{line-height:1.8;margin:12px 0}.compose-settings-buttons{display:flex;gap:8px;flex-wrap:wrap}
+.compose-music-panel{max-width:440px;margin:16px 0;padding:14px;border:1px solid var(--line);border-radius:12px;background:white}
+.compose-music-panel iframe{width:100%;aspect-ratio:16/9;border:0;display:block}.compose-music-panel summary{cursor:pointer;font-size:12px;padding-bottom:10px;color:var(--muted)}
+.compose-dialog p{margin:14px 0;line-height:1.8}.compose-dialog input{font:inherit;width:100%;padding:12px;border:1px solid var(--line);border-radius:8px;margin:12px 0}.compose-dialog-actions{display:flex;gap:8px;justify-content:flex-end}.compose-dialog .danger{background:#8d4242;color:white;border-color:#8d4242}
+@media(min-width:1440px){.compose-lines{--cell-size:36px}}
+@media(max-width:800px){.compose-page{padding:32px 20px 20px}.compose-heading h1{font-size:27px}.compose-heading>p{font-size:14px}.compose-title{display:block}.compose-title input{margin-top:10px;font-size:20px}.compose-lines{padding:20px 13px;--cell-size:28px}.compose-row{gap:2px;margin-bottom:13px}.history-card{display:block}.history-actions{margin-top:15px}.compose-actions .compose-reset{margin-left:0}.compose-actions{position:static}.journey{flex-wrap:wrap}.journey i{width:12px}}
+@media print{
+ .compose-print-sheet{break-after:page;page-break-after:always;width:186mm;min-height:260mm;padding:0;box-sizing:border-box}
+ .compose-print-sheet:last-child{break-after:auto;page-break-after:auto}
+ .compose-print-sheet h1{font-size:21pt;line-height:1.4;margin:0 0 5mm;color:#193c52}
+ .compose-print-sheet h2{font-size:13pt;margin:0 0 7mm;color:#345d76}
+ .compose-print-line{display:flex;gap:.7mm;align-items:center;white-space:nowrap;break-inside:avoid;margin-bottom:5mm}
+ .compose-print-cell{display:inline-flex;align-items:center;justify-content:center;width:9.5mm;height:11mm;flex:none;border:.3mm solid #b8ccdb;border-radius:1mm;font-size:19pt;font-weight:700;color:#193c52}
+ .compose-print-gap{width:2mm;flex:none}
+}
+
+.sing-dialog{max-width:none;width:100vw;height:100dvh;max-height:none;margin:0;border:0;border-radius:0;padding:24px 32px;background:#f7fafc;overflow:auto;--sing-cell:min(4.7vw,calc((100dvh - 170px)/16),56px)}
+.sing-header{display:flex;align-items:center;justify-content:space-between;gap:16px;max-width:1250px;margin:0 auto 24px}.sing-header h2{margin:0;font-size:25px}.sing-controls{display:flex;gap:8px;flex-shrink:0}.sing-controls button,.sing-controls select{font:700 14px "Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);border:1px solid var(--line);background:white;border-radius:8px;padding:10px}
+.sing-row{display:flex;justify-content:center;gap:3px;margin-bottom:8px}.sing-cell{width:var(--sing-cell);height:calc(var(--sing-cell)*1.1);display:flex;align-items:center;justify-content:center;border:1px solid #b8ccdb;background:white;border-radius:4px;font-size:calc(var(--sing-cell)*.76);font-weight:800;flex:none}.sing-gap{width:calc(var(--sing-cell)*.34);flex:none}
+@media(max-width:650px){.sing-dialog{padding:18px 10px;--sing-cell:min(5.2vw,calc((100dvh - 200px)/16))}.sing-header{display:block;margin-bottom:20px}.sing-header h2{font-size:21px;margin-bottom:14px}.sing-controls button,.sing-controls select{font-size:12px;padding:8px}}
+
+.history-more{padding:13px;border:1px solid var(--line);border-radius:10px;background:white;color:var(--ink);font:700 13px "Malgun Gothic","Apple SD Gothic Neo",sans-serif}

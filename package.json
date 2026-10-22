@@ -1,1 +1,10 @@
-{"name":"find-history-people","version":"1.0.0","private":true,"type":"module","scripts":{"start":"node tools/serve.mjs","check":"node tools/check.mjs"}}
+{
+  "name": "find-history-people",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "check": "node tools/check.mjs && node tools/check-composer.mjs"
+  }
+}
