@@ -65,3 +65,5 @@
 .history-more{padding:13px;border:1px solid var(--line);border-radius:10px;background:white;color:var(--ink);font:700 13px "Malgun Gothic","Apple SD Gothic Neo",sans-serif}
 
 .compose-cell.compose-current{outline:3px solid #efc65a;outline-offset:1px;background:#fffbed}.compose-input-proxy{position:fixed;z-index:6;resize:none;overflow:hidden;color:transparent;caret-color:transparent;background:transparent;border:0;padding:0;outline:none;font:24px "Malgun Gothic","Apple SD Gothic Neo",sans-serif;box-sizing:border-box}.compose-dialog-actions{flex-wrap:wrap}
+
+.compose-save-actions{display:flex;align-items:center;gap:8px;margin-left:auto}.compose-save-actions .compose-reset{margin-left:0}@media(max-width:500px){.compose-save-actions{flex-basis:100%;justify-content:flex-end}}
