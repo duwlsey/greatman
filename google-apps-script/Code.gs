@@ -56,12 +56,12 @@ function doPost(e){
   const work=validateWork_(data.work);if(data.action==='save'&&!work.verses.length)throw Error('노랫말을 한 글자 이상 적어 주세요.');
   lock=LockService.getScriptLock();lock.waitLock(15000);
   const cached=CacheService.getScriptCache().get('result:'+requestId);if(cached)return json_({ok:true});
-  const book=book_(),current=current_(book);if(data.baseRevision!==current.revision)throw Error('다른 화면에서 먼저 저장했어요. 내 노랫말을 다운로드한 뒤 저장된 노랫말을 확인해 주세요.');
+  const book=book_(),current=current_(book);if(data.baseRevision!==current.revision)throw Error('다른 화면에서 먼저 저장했어요. 출력으로 내 노랫말을 보관한 뒤 저장된 노랫말을 확인해 주세요.');
   // Keep current text and any unsaved edits before a reset; never delete a record.
-  if(data.action==='reset'){
+  if(data.action==='reset'&&data.keepRecord!==false){
    if(current.work.verses.length&&JSON.stringify(current.work)!==JSON.stringify(work))archive_(book,current.work,'reset');
    archive_(book,work,'reset');
-  }else archive_(book,work,'save');
+  }else if(data.action==='save')archive_(book,work,'save');
   const next=data.action==='reset'?emptyWork_():work;
   book.getSheetByName('현재').getRange(2,1,1,3).setValues([[current.revision+1,JSON.stringify(next),new Date().toISOString()]]);
   SpreadsheetApp.flush();reply={ok:true,done:true,...publicData_(book)};

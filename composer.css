@@ -63,3 +63,5 @@
 @media(max-width:650px){.sing-dialog{padding:18px 10px;--sing-cell:min(5.2vw,calc((100dvh - 200px)/16))}.sing-header{display:block;margin-bottom:20px}.sing-header h2{font-size:21px;margin-bottom:14px}.sing-controls button,.sing-controls select{font-size:12px;padding:8px}}
 
 .history-more{padding:13px;border:1px solid var(--line);border-radius:10px;background:white;color:var(--ink);font:700 13px "Malgun Gothic","Apple SD Gothic Neo",sans-serif}
+
+.compose-cell.compose-current{outline:3px solid #efc65a;outline-offset:1px;background:#fffbed}.compose-input-proxy{position:fixed;z-index:6;resize:none;overflow:hidden;color:transparent;caret-color:transparent;background:transparent;border:0;padding:0;outline:none;font:24px "Malgun Gothic","Apple SD Gothic Neo",sans-serif;box-sizing:border-box}.compose-dialog-actions{flex-wrap:wrap}
