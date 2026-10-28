@@ -46,17 +46,25 @@ function validateWork_(raw){
 }
 function archive_(book,work,reason){if(!work.verses.length)return;book.getSheetByName('기록').appendRow([Utilities.getUuid(),new Date().toISOString(),safeCell_(work.title),JSON.stringify(work.verses.map(v=>v.number)),reason,JSON.stringify(work)])}
 function safeCell_(value){return /^[=+@-]/.test(value)?"'"+value:value}
+function deleteRecord_(book,id){
+ if(!/^[a-zA-Z0-9-]{20,80}$/.test(id||''))throw Error('기록 번호를 확인해 주세요.');
+ const sheet=book.getSheetByName('기록');if(sheet.getLastRow()<2)throw Error('이미 삭제되었거나 없는 기록이에요.');
+ const found=sheet.getRange(2,1,sheet.getLastRow()-1,1).createTextFinder(id).matchEntireCell(true).findNext();if(!found)throw Error('이미 삭제되었거나 없는 기록이에요.');
+ const row=sheet.getRange(found.getRow(),1,1,6).getValues()[0];
+ let trash=book.getSheetByName('휴지통');if(!trash){trash=book.insertSheet('휴지통');trash.appendRow(['id','savedAt','title','verses','reason','work','deletedAt'])}
+ trash.appendRow([...row,new Date().toISOString()]);sheet.deleteRow(found.getRow());
+}
 function doPost(e){
  let requestId='',lock,reply;
  try{
   const text=e.parameter&&e.parameter.payload;if(!text||text.length>60000)throw Error('보낼 노랫말 크기를 확인해 주세요.');
   const data=JSON.parse(text);requestId=data.requestId;if(!/^[a-f0-9]{32}$/.test(requestId||''))throw Error('요청 번호를 확인해 주세요.');
   const props=PropertiesService.getScriptProperties();if(!props.getProperty('EDIT_KEY')||data.editKey!==props.getProperty('EDIT_KEY'))throw Error('선생님 편집 비밀번호가 맞지 않아요.');
-  if(!['save','reset'].includes(data.action))throw Error('저장 방법을 확인해 주세요.');
-  const work=validateWork_(data.work);if(data.action==='save'&&!work.verses.length)throw Error('노랫말을 한 글자 이상 적어 주세요.');
+  if(!['save','reset','delete'].includes(data.action))throw Error('저장 방법을 확인해 주세요.');
+  const work=data.action==='delete'?null:validateWork_(data.work);if(data.action==='save'&&!work.verses.length)throw Error('노랫말을 한 글자 이상 적어 주세요.');
   lock=LockService.getScriptLock();lock.waitLock(15000);
   const cached=CacheService.getScriptCache().get('result:'+requestId);if(cached)return json_({ok:true});
-  const book=book_(),current=current_(book);if(data.baseRevision!==current.revision)throw Error('다른 화면에서 먼저 저장했어요. 출력으로 내 노랫말을 보관한 뒤 저장된 노랫말을 확인해 주세요.');
+  const book=book_(),current=current_(book);if(data.action==='delete'){deleteRecord_(book,data.recordId);SpreadsheetApp.flush();reply={ok:true,done:true,...publicData_(book)}}else{if(data.baseRevision!==current.revision)throw Error('다른 화면에서 먼저 저장했어요. 출력으로 내 노랫말을 보관한 뒤 저장된 노랫말을 확인해 주세요.');
   // Keep current text and any unsaved edits before a reset; never delete a record.
   if(data.action==='reset'&&data.keepRecord!==false){
    if(current.work.verses.length&&JSON.stringify(current.work)!==JSON.stringify(work))archive_(book,current.work,'reset');
@@ -65,6 +73,7 @@ function doPost(e){
   const next=data.action==='reset'?emptyWork_():work;
   book.getSheetByName('현재').getRange(2,1,1,3).setValues([[current.revision+1,JSON.stringify(next),new Date().toISOString()]]);
   SpreadsheetApp.flush();reply={ok:true,done:true,...publicData_(book)};
+ }
  }catch(error){reply={ok:false,done:true,message:error.message}}finally{if(lock)lock.releaseLock()}
  if(/^[a-f0-9]{32}$/.test(requestId))CacheService.getScriptCache().put('result:'+requestId,JSON.stringify(reply),600);
  return json_({ok:true});
