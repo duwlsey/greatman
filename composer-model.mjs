@@ -11,3 +11,5 @@ export function spacedLine(template,cells,empty='□'){let index=0;return letter
 export const escapeHtml=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function workText(work){return [work.title,...filledVerses(work).flatMap(v=>['',`${v.number}절`,...v.lines.map((line,i)=>spacedLine(templates[v.number-1][i],line))])].join('\n')}
 export function workPrintMarkup(work){return filledVerses(work).map(v=>`<article class="compose-print-sheet"><h1>${escapeHtml(work.title)}</h1><h2>${v.number}절</h2>${v.lines.map((line,l)=>{let i=0;return `<div class="compose-print-line">${letters(templates[v.number-1][l]).map(c=>/\s/u.test(c)?'<span class="compose-print-gap"></span>':`<span class="compose-print-cell">${escapeHtml(line[i++]||'')}</span>`).join('')}</div>`}).join('')}</article>`).join('')}
+
+export function getSaveAction(work,clearRequested=false){if(filledVerses(work).length)return 'save';if(clearRequested)return 'reset';throw Error('노랫말 칸에 한 글자 이상 입력한 뒤 저장해 주세요. 제목만으로는 제작 기록이 남지 않아요.')}

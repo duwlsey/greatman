@@ -12,3 +12,5 @@ proxy.value='한글 입력';proxy.listeners.input();assert.deepEqual(inputs.slic
 proxy.value='한글';proxy.listeners.input();assert.deepEqual(inputs.slice(0,4).map(i=>i.value),['한','글','','']);
 handlers.focusin({target:inputs[7]});proxy.value='새';proxy.listeners.input();assert.equal(inputs[7].value,'새');assert.equal(inputs[0].value,'한');
 console.log('Syllable input passed: Korean composition, consecutive syllables, trailing input, paste spacing, backspace and replacement.');
+
+proxy.listeners.blur();proxy.value='';proxy.listeners.compositionend();proxy.listeners.input();assert.equal(inputs[7].value,'새','Late IME events after blur must not erase visible lyrics');

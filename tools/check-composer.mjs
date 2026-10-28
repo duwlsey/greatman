@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import crypto from 'node:crypto';
-import {blankWork,serializeWork,deserializeWork,filledVerses,workPrintMarkup,workText,templates,slots} from '../composer-model.mjs';
+import {blankWork,serializeWork,getSaveAction,deserializeWork,filledVerses,workPrintMarkup,workText,templates,slots} from '../composer-model.mjs';
 import {validEndpoint} from '../composer-store.mjs';
 assert(validEndpoint('https://script.google.com/macros/s/test-123/exec'));
 assert(!validEndpoint('https://evil.com/macros/s/test/exec'));
@@ -27,3 +27,5 @@ const invalid=structuredClone(serialized);invalid.verses[0].lines[0][0]='두글�
 const archivedCount=sheetBook.getSheetByName('기록').getLastRow();
 result=post('reset',2,draft,props.get('EDIT_KEY'),false);assert.equal(result.ok,true);assert.equal(result.current.work.verses.length,0);assert.equal(sheetBook.getSheetByName('기록').getLastRow(),archivedCount,'Discard reset must not add or remove history');
 console.log('Composer checks passed: exact slots, filled verses only, print/text export, read, password, revision conflict, archival reset and record retrieval.');
+
+assert.throws(()=>getSaveAction(blankWork()),/한 글자/);assert.equal(getSaveAction(blankWork(),true),'reset');assert.equal(getSaveAction(work),'save');
