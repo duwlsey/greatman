@@ -28,8 +28,8 @@ async function loadCurrent({force=false,quiet=false}={}){
  if(!endpoint)return false;if(busy)return false;
  const data=await readShared(endpoint);connected=true;records=data.records||[];recordCount=data.recordCount||records.length;renderHistory();lastPoll=Date.now();
  if(!dirty||force){const changed=revision!==data.current.revision||force;revision=data.current.revision;work=deserializeWork(data.current.work);dirty=false;clearRequested=false;if(changed)renderWork();cacheDraft();if(!quiet)tell(data.current.work.verses.length?'저장된 노랫말을 불러왔어요.':'저장소가 연결됐어요. 현재 공유 화면은 빈칸이에요. 노랫말을 작성한 뒤 저장해 주세요.','success')}
- else if(data.current.revision!==revision){tell('다른 화면에서 저장한 새 노랫말이 있어요. 출력으로 내 글을 보관한 뒤 화면을 새로 열어 저장된 노랫말을 확인해 주세요.','error')}
- return true
+ else if(data.current.revision!==revision){tell('다른 화면에서 새로 저장한 내용이 있어요. 내 입력 내용은 이 기기에 보관 중입니다. 저장을 누르면 어떤 내용을 공유할지 확인할 수 있어요.','error')}
+ return !dirty||data.current.revision===revision
 }
 async function key(){if(editKey)return editKey;const dialog=$('#compose-password');$('#compose-password-input').value='';return new Promise(resolve=>{dialog.addEventListener('close',()=>{if(dialog.returnValue==='ok'){editKey=$('#compose-password-input').value;resolve(editKey)}else resolve('')},{once:true});dialog.returnValue='';dialog.showModal();$('#compose-password-input').focus()})}
 async function publish(action,{keepRecord=true}={}){
@@ -37,13 +37,15 @@ async function publish(action,{keepRecord=true}={}){
  if(!connected){try{await loadCurrent()}catch(e){tell(e.message,'error');return}}
  const secret=await key();if(!secret)return;
  busy=true;updateCount();tell(action==='reset'?'빈 노랫말 화면을 저장하고 있어요.':'친구들과 볼 노랫말을 저장하고 있어요.');
- try{const result=await writeShared(endpoint,{action,editKey:secret,baseRevision:revision,keepRecord,work:serializeWork(work)});revision=result.current.revision;work=deserializeWork(result.current.work);dirty=false;clearRequested=false;records=result.records||records;recordCount=result.recordCount||records.length;renderWork();renderHistory();cacheDraft();tell(action==='reset'?(keepRecord?'이전 노랫말은 제작 기록에 남기고, 빈칸으로 새로 시작했어요.':'새 기록을 남기지 않고 빈칸으로 초기화했어요. 기존 제작 기록은 그대로 있어요.'):'저장했어요. 같은 수업 주소를 연 친구들 화면에도 곧 반영돼요.','success')}
+ try{const latest=await readShared(endpoint);records=latest.records||[];recordCount=latest.recordCount||records.length;renderHistory();
+ if(latest.current.revision!==revision){const other=deserializeWork(latest.current.work);if(filledVerses(other).length&&JSON.stringify(serializeWork(other))!==JSON.stringify(serializeWork(work))&&!confirm('다른 화면에서 저장된 노랫말이 있어요. 지금 작성한 내용으로 새로 저장할까요? 기존 제작 기록은 유지됩니다.')){tell('저장하지 않았어요. 입력한 내용은 이 기기에 그대로 있어요.');return}revision=latest.current.revision}
+ const result=await writeShared(endpoint,{action,editKey:secret,baseRevision:revision,keepRecord,work:serializeWork(work)});revision=result.current.revision;work=deserializeWork(result.current.work);dirty=false;clearRequested=false;records=result.records||records;recordCount=result.recordCount||records.length;renderWork();renderHistory();cacheDraft();tell(action==='reset'?(keepRecord?'이전 노랫말은 제작 기록에 남기고, 빈칸으로 새로 시작했어요.':'새 기록을 남기지 않고 빈칸으로 초기화했어요. 기존 제작 기록은 그대로 있어요.'):'공유 저장을 완료했어요. 아래 이전 제작 기록에 제목이 추가됐어요.','success')}
  catch(e){if(e.message.includes('비밀번호')){editKey='';}tell(e.message,'error')}finally{busy=false;updateCount()}
 }
 $('#compose-save').onclick=()=>{syllableInput.finish();document.querySelectorAll('.compose-cell').forEach(input=>{const [v,l,c]=cellInfo(input);work.verses[v][l][c]=letters(input.value)[0]||''});try{publish(getSaveAction(work,clearRequested),{keepRecord:false})}catch(error){tell(error.message,'error')}};
 $('#compose-reset').onclick=()=>{if(busy)return;syllableInput.finish();work.verses=blankWork().verses;renderWork();markDirty();clearRequested=true;cacheDraft();updateCount();tell(connected?'노랫말을 모두 지웠어요. 저장을 누르면 친구들 화면도 빈칸으로 바뀌어요. 기존 제작 기록은 유지돼요.':'화면의 노랫말을 모두 지웠어요. 기존 제작 기록은 유지돼요.')};
 $('#compose-history').addEventListener('click',async e=>{const more=e.target.closest('[data-load-more]');if(more){more.disabled=true;try{const data=await readShared(endpoint,'history',{offset:String(records.length)});records.push(...data.records);recordCount=data.recordCount;renderHistory()}catch(error){tell(error.message,'error');more.disabled=false}return}const button=e.target.closest('[data-record]');if(!button||busy)return;button.disabled=true;try{const result=await readShared(endpoint,'record',{id:button.dataset.record}),past=deserializeWork(result.record.work);if(button.dataset.action==='print')print(past);else openSing(past);}catch(error){tell(error.message,'error')}finally{button.disabled=false}});
-$('#history-refresh').onclick=async()=>{try{await loadCurrent({quiet:true});tell('제작 기록을 새로 확인했어요.','success')}catch(error){tell(error.message,'error')}};
+$('#history-refresh').onclick=async()=>{try{const refreshed=await loadCurrent({quiet:true});if(refreshed)tell(dirty?'제작 기록을 확인했어요. 현재 입력 내용은 아직 공유 저장 전이에요.':'제작 기록을 새로 확인했어요.','success')}catch(error){tell(error.message,'error')}};
 function startPolling(){clearInterval(pollTimer);pollTimer=setInterval(async()=>{if(document.hidden||$('#compose').hidden||busy||Date.now()-lastPoll<12000)return;try{await loadCurrent({quiet:true})}catch{/* Keep draft and prior confirmed screen during a temporary outage. */}},15000)}
 export function leaveComposer(){syllableInput.finish();stopAccompaniment()}
 export async function enterComposer(){await ready;if(endpoint&&!dirty)try{await loadCurrent({quiet:true})}catch(e){tell(e.message,'error')}}
