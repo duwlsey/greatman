@@ -2,7 +2,7 @@ import {verses} from './data.mjs';
 export const templates=verses.map(v=>v.split('\n'));
 export const letters=text=>Array.from(String(text).normalize('NFC'));
 export const slots=line=>letters(line).filter(c=>! /\s/u.test(c));
-export function blankWork(){return {title:'우리 반의 위인을 찾아서',verses:templates.map(lines=>lines.map(line=>slots(line).map(()=>'')))}}
+export function blankWork(){return {title:'',verses:templates.map(lines=>lines.map(line=>slots(line).map(()=>'')))}}
 export function normalizeWork(raw={}){const w=blankWork();w.title=String(raw.title||w.title).slice(0,80);for(let v=0;v<5;v++)for(let l=0;l<w.verses[v].length;l++)for(let c=0;c<w.verses[v][l].length;c++)w.verses[v][l][c]=letters(raw.verses?.[v]?.[l]?.[c]||'')[0]||'';return w}
 export function filledVerses(work){return work.verses.map((lines,index)=>({number:index+1,lines})).filter(v=>v.lines.some(line=>line.some(c=>c.trim())))}
 export function serializeWork(work){return {title:work.title,verses:filledVerses(work)}}

@@ -1,5 +1,5 @@
 import {attachSyllableInput} from './composer-input.mjs?v=33';
-import {blankWork,normalizeWork,serializeWork,getSaveAction,deserializeWork,filledVerses,templates,letters,escapeHtml,workPrintMarkup} from './composer-model.mjs?v=33';
+import {blankWork,normalizeWork,serializeWork,getSaveAction,deserializeWork,filledVerses,templates,letters,escapeHtml,workPrintMarkup} from './composer-model.mjs?v=37';
 import {readShared,writeShared} from './composer-store.mjs?v=25';
 import {stopMusic} from './music.mjs?v=24';
 const $=s=>document.querySelector(s);
@@ -24,12 +24,13 @@ $('#show-original').addEventListener('change',()=>document.querySelectorAll('.co
 function print(workToPrint){if(!filledVerses(workToPrint).length){tell('먼저 한 글자 이상 적어 주세요.');return}let root=$('#print-lyrics');if(!root){root=document.createElement('div');root.id='print-lyrics';document.body.append(root)}root.innerHTML=workPrintMarkup(workToPrint);window.print()}
 $('#compose-print').onclick=()=>print(work);
 function renderHistory(){const container=$('#compose-history');if(!records.length){container.innerHTML='<p class="compose-empty">아직 제작 기록이 없어요. 첫 노랫말을 저장해 보세요.</p>';return}container.innerHTML=records.map(r=>`<article class="history-card"><div><h3><button class="history-title-button" data-record="${escapeHtml(r.id)}" data-action="sing">${escapeHtml(r.title)}</button></h3><p>${escapeHtml(new Date(r.savedAt).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}))} · ${r.verseNumbers.map(n=>n+'절').join(' · ')}${r.reason==='reset'?' · 초기화 전 기록':''}</p></div><div class="history-actions"><button data-record="${escapeHtml(r.id)}" data-action="print">출력</button><button class="history-delete" data-record="${escapeHtml(r.id)}" data-action="delete">삭제</button></div></article>`).join('');if(recordCount>records.length)container.insertAdjacentHTML('beforeend','<button class="history-more" data-load-more>이전 기록 더 보기</button>')}
-async function loadCurrent({force=false,quiet=false}={}){
- if(!endpoint)return false;if(busy)return false;
+async function loadCurrent({quiet=false}={}){
+ if(!endpoint||busy)return false;
  const data=await readShared(endpoint);connected=true;records=data.records||[];recordCount=data.recordCount||records.length;renderHistory();lastPoll=Date.now();
- if(!dirty||force){const changed=revision!==data.current.revision||force;revision=data.current.revision;work=deserializeWork(data.current.work);dirty=false;clearRequested=false;if(changed)renderWork();cacheDraft();if(!quiet)tell(data.current.work.verses.length?'저장된 노랫말을 불러왔어요.':'저장소가 연결됐어요. 현재 공유 화면은 빈칸이에요. 노랫말을 작성한 뒤 저장해 주세요.','success')}
- else if(data.current.revision!==revision){tell('다른 화면에서 새로 저장한 내용이 있어요. 내 입력 내용은 이 기기에 보관 중입니다. 저장을 누르면 어떤 내용을 공유할지 확인할 수 있어요.','error')}
- return !dirty||data.current.revision===revision
+ // Shared data supplies the history, never the new-song editor.
+ if(!dirty)revision=data.current.revision;
+ if(!quiet)tell('저장소가 연결됐어요. 빈칸에 새 노랫말을 만들어 보세요. 저장한 노랫말은 아래 제작 기록에서 열 수 있어요.','success');
+ return true
 }
 async function key({force=false,recordTitle=''}={}){if(editKey&&!force)return editKey;const dialog=$('#compose-password');dialog.querySelector('h2').textContent=recordTitle?'제작 기록 삭제':'선생님 편집 비밀번호';dialog.querySelector('p').textContent=recordTitle?'「'+recordTitle+'」 기록을 삭제하려면 교사용 비밀번호를 입력해 주세요. 현재 작성 중인 노랫말은 그대로 유지됩니다.':'저장할 수 있는 선생님인지 비밀번호로 확인해요.';dialog.querySelector('button[value=ok]').textContent=recordTitle?'삭제하기':'저장하기';$('#compose-password-input').value='';return new Promise(resolve=>{dialog.addEventListener('close',()=>{if(dialog.returnValue==='ok'){editKey=$('#compose-password-input').value;resolve(editKey)}else resolve('')},{once:true});dialog.returnValue='';dialog.showModal();$('#compose-password-input').focus()})}
 async function publish(action,{keepRecord=true}={}){
@@ -56,7 +57,7 @@ $('#compose-history').addEventListener('click',async e=>{const more=e.target.clo
 $('#history-refresh').onclick=async()=>{try{const refreshed=await loadCurrent({quiet:true});if(refreshed)tell(dirty?'제작 기록을 확인했어요. 현재 입력 내용은 아직 공유 저장 전이에요.':'제작 기록을 새로 확인했어요.','success')}catch(error){tell(error.message,'error')}};
 function startPolling(){clearInterval(pollTimer);pollTimer=setInterval(async()=>{if(document.hidden||$('#compose').hidden||busy||Date.now()-lastPoll<12000)return;try{await loadCurrent({quiet:true})}catch{/* Keep draft and prior confirmed screen during a temporary outage. */}},15000)}
 export function leaveComposer(){syllableInput.finish();stopAccompaniment()}
-export async function enterComposer(){await ready;if(endpoint&&!dirty)try{await loadCurrent({quiet:true})}catch(e){tell(e.message,'error')}}
+export async function enterComposer(){work=blankWork();dirty=false;clearRequested=false;renderWork();await ready;if(endpoint)try{await loadCurrent({quiet:true});tell('새 노랫말을 만들어 보세요. 저장한 노랫말은 아래 제작 기록에서 열 수 있어요.')}catch(e){tell(e.message,'error')}}
 let player=null,loadingPlayer=false,wantPlay=false,rewindTimer;
 function audioState(playing){$('#compose-play').textContent=playing?'Ⅱ 반주 일시정지':'▶ 반주 재생';$('#compose-play').setAttribute('aria-pressed',String(playing));$('#sing-play').textContent=playing?'Ⅱ 반주 일시정지':'▶ 반주 재생'}
 function stopAccompaniment(){wantPlay=false;player?.pauseVideo?.();audioState(false)}
@@ -64,7 +65,8 @@ let accompanimentId='XGMb3JCd934';
 async function youtubeReady(){if(window.YT?.Player)return;await new Promise((resolve,reject)=>{const previous=window.onYouTubeIframeAPIReady;window.onYouTubeIframeAPIReady=()=>{previous?.();resolve()};if(!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')){const script=document.createElement('script');script.src='https://www.youtube.com/iframe_api';script.onerror=reject;document.head.append(script)}setTimeout(()=>window.YT?.Player?resolve():reject(Error('반주 연결이 늦어요. YouTube에서 열어 주세요.')),18000)})}
 $('#compose-play').onclick=async()=>{stopMusic();if(player){wantPlay=player.getPlayerState()!==1;wantPlay?player.playVideo():player.pauseVideo();return}if(loadingPlayer)return;loadingPlayer=true;wantPlay=true;$('#compose-play').disabled=true;try{await youtubeReady();player=new YT.Player('compose-player',{host:'https://www.youtube-nocookie.com',videoId:accompanimentId,playerVars:{playsinline:1,rel:0,origin:location.origin},events:{onReady:event=>{loadingPlayer=false;$('#compose-play').disabled=false;if(wantPlay)event.target.playVideo();rewindTimer=setInterval(()=>{$('#compose-restart').hidden=!(player.getCurrentTime()>1&&[1,2,3].includes(player.getPlayerState()))},300)},onStateChange:event=>audioState(event.data===1),onError:()=>{loadingPlayer=false;$('#compose-play').disabled=false;audioState(false);tell('반주를 재생할 수 없어요. 학교의 YouTube 연결을 확인한 뒤 다시 시도해 주세요.','error')},onAutoplayBlocked:()=>tell('반주 영상 안의 재생 버튼을 한 번 눌러 주세요.')}})}catch(e){loadingPlayer=false;$('#compose-play').disabled=false;tell(e.message,'error')}};
 $('#compose-restart').onclick=()=>{stopAccompaniment();player?.cueVideoById({videoId:accompanimentId,startSeconds:0});$('#compose-restart').hidden=true};
-(async()=>{try{const config=await fetch(new URL('./composer-config.json?v=30',import.meta.url)).then(r=>r.json());endpoint=new URLSearchParams(location.search).get('classroom')||config.endpoint||safeGet('greatman-endpoint')||'';accompanimentId=config.accompanimentId||accompanimentId}catch{endpoint=safeGet('greatman-endpoint')||''}try{const draft=JSON.parse(safeGet(draftKey())||'null');if(draft){work=normalizeWork(draft.work);revision=draft.revision||0;dirty=Boolean(draft.dirty);clearRequested=Boolean(draft.clearRequested)}}catch{}renderWork();if(endpoint){try{await loadCurrent();startPolling()}catch(e){tell(e.message,'error')}}else tell('이 기기에 임시 보관 중이에요. 온라인 저장소 연결을 확인해 주세요.')})().then(()=>{if(!endpoint)tell('이 기기에 임시 보관 중이에요. 온라인 저장소에 연결되지 않았어요.');readyResolve()});
+renderWork();
+(async()=>{try{const config=await fetch(new URL('./composer-config.json?v=30',import.meta.url)).then(r=>r.json());endpoint=new URLSearchParams(location.search).get('classroom')||config.endpoint||safeGet('greatman-endpoint')||'';accompanimentId=config.accompanimentId||accompanimentId}catch{endpoint=safeGet('greatman-endpoint')||''}if(endpoint){try{await loadCurrent();startPolling()}catch(e){tell(e.message,'error')}}else tell('이 기기에 임시 보관 중이에요. 온라인 저장소 연결을 확인해 주세요.')})().then(()=>{if(!endpoint)tell('이 기기에 임시 보관 중이에요. 온라인 저장소에 연결되지 않았어요.');readyResolve()});
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});
 
 let singWork=null;
