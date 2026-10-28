@@ -1,4 +1,4 @@
-import {enterComposer,leaveComposer} from './composer.mjs?v=30';
+import {enterComposer,leaveComposer} from './composer.mjs?v=32';
 import './printing.mjs?v=24';
 import {stopMusic} from './music.mjs?v=24';
 import {assessments} from './assessment.mjs';

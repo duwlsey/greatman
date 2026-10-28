@@ -31,14 +31,14 @@ async function loadCurrent({force=false,quiet=false}={}){
  else if(data.current.revision!==revision){tell('다른 화면에서 저장한 새 노랫말이 있어요. 출력으로 내 글을 보관한 뒤 ‘저장된 노랫말 확인’을 눌러 주세요.','error')}
  return true
 }
-async function key(){if(editKey)return editKey;const dialog=$('#compose-password');$('#compose-password-input').value='';return new Promise(resolve=>{dialog.addEventListener('close',()=>{if(dialog.returnValue==='ok'){editKey=$('#compose-password-input').value;$('#compose-key').value=editKey;resolve(editKey)}else resolve('')},{once:true});dialog.showModal()})}
+async function key(){if(editKey)return editKey;const dialog=$('#compose-password');$('#compose-password-input').value='';return new Promise(resolve=>{dialog.addEventListener('close',()=>{if(dialog.returnValue==='ok'){editKey=$('#compose-password-input').value;$('#compose-key').value=editKey;resolve(editKey)}else resolve('')},{once:true});dialog.returnValue='';dialog.showModal();$('#compose-password-input').focus()})}
 async function publish(action,{keepRecord=true}={}){
  if(busy)return;if(!endpoint){$('#compose-settings').open=true;tell('공동 저장을 하려면 먼저 선생님 설정에서 구글 저장소를 연결해 주세요.','error');return}
  if(!connected){try{await loadCurrent()}catch(e){tell(e.message,'error');return}}
  const secret=await key();if(!secret)return;
  busy=true;updateCount();tell(action==='reset'?'빈 노랫말 화면을 저장하고 있어요.':'친구들과 볼 노랫말을 저장하고 있어요.');
  try{const result=await writeShared(endpoint,{action,editKey:secret,baseRevision:revision,keepRecord,work:serializeWork(work)});revision=result.current.revision;work=deserializeWork(result.current.work);dirty=false;records=result.records||records;recordCount=result.recordCount||records.length;renderWork();renderHistory();cacheDraft();tell(action==='reset'?(keepRecord?'이전 노랫말은 제작 기록에 남기고, 빈칸으로 새로 시작했어요.':'새 기록을 남기지 않고 빈칸으로 초기화했어요. 기존 제작 기록은 그대로 있어요.'):'저장했어요. 같은 수업 주소를 연 친구들 화면에도 곧 반영돼요.','success')}
- catch(e){tell(e.message,'error')}finally{busy=false;updateCount()}
+ catch(e){if(e.message.includes('비밀번호')){editKey='';$('#compose-key').value=''}tell(e.message,'error')}finally{busy=false;updateCount()}
 }
 $('#compose-save').onclick=()=>publish(filledVerses(work).length?'save':'reset',{keepRecord:false});
 $('#compose-reset').onclick=()=>{if(busy)return;syllableInput.finish();work.verses=blankWork().verses;renderWork();markDirty();tell(connected?'노랫말을 모두 지웠어요. 저장을 누르면 친구들 화면도 빈칸으로 바뀌어요. 기존 제작 기록은 유지돼요.':'화면의 노랫말을 모두 지웠어요. 기존 제작 기록은 유지돼요.')};
